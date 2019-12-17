@@ -1,4 +1,4 @@
-import { AppDbBulkRes, AppDbCollection, AppDbCollectionSchema, AppDbDoc, IDomoDb, ManualExportStatus } from "./models";
+import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, IDomoDb, ManualExportStatus } from "./models";
 
 class DomoDataService {
     private static instance: DomoDataService;
@@ -10,7 +10,7 @@ class DomoDataService {
         // this.damUrl = "https://buildintelligencedataservices.azurewebsites.net/api";
         this.domoUrl = "/domo/datastores/v1/collections";
     }
-    public async GetAllDocuments<T>(collectionName: string): Promise<Array<AppDbDoc<T>>> {
+    public async GetAllDocuments<T>(collectionName: string): Promise<Array<IAppDbDoc<T>>> {
         const options = {
             // headers,
         };
@@ -19,7 +19,7 @@ class DomoDataService {
                 return response.json();
             });
     }
-    public async GetDocument<T>(collectionName: string, documentId: string): Promise<AppDbDoc<T>> {
+    public async GetDocument<T>(collectionName: string, documentId: string): Promise<IAppDbDoc<T>> {
         const options = {
             // headers,
         };
@@ -28,9 +28,25 @@ class DomoDataService {
                 return response.json();
             });
     }
-    public async CreateDocuments(collectionName: string, documents: any[]): Promise<AppDbBulkRes> {
+    public async GetAppDbDocument<T>(doc: IDomoDb<T>): Promise<IAppDbDoc<T>> {
+        const options = {
+            // headers,
+        };
+        // TODO: check for/handle no id case.
+        return fetch(`${this.domoUrl}/${doc.collectionName}/documents/${doc.id}`, options)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 404) {
+                    throw new Error("not found");
+                } else {
+                    throw new Error("Domo Request Failed");
+                }
+            });
+    }
+    public async CreateAppDbDocuments<T>(collectionName: string, documents: Array<IDomoDb<T>>): Promise<IAppDbBulkRes> {
         //  Domo expects the body to be [{content: documentObject }]
-        const docs: object[] = documents.map((document) => ({ content: document }));
+        const docs: object[] = documents.map((document) => ({ content: document.GetAppDbFormat() }));
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify(docs),
@@ -38,23 +54,11 @@ class DomoDataService {
             method: "POST",
         };
         const res = await fetch(`${this.domoUrl}/${collectionName}/documents/bulk`, options);
-        const body: AppDbBulkRes = await res.json();
+        const body: IAppDbBulkRes = await res.json();
         // Domo returns the number of documents successfully created i.e. {"Created":2}
         return body;
     }
-    public async CreateDocument<T>(collectionName: string, document: T): Promise<AppDbDoc<T>> {
-        const headers = new Headers({ "Content-Type": "application/json" });
-        const options = {
-            body: JSON.stringify({ content: document }), // Domo needs the form { content: document }
-            headers,
-            method: "POST",
-        };
-        return fetch(`${this.domoUrl}/${collectionName}/documents/`, options)
-            .then((response) => {
-                return response.json();
-            });
-    }
-    public async CreateAppDbDocument<U, T extends IDomoDb<U> & U>(doc: T): Promise<AppDbDoc<U>> {
+    public async CreateAppDbDocument<U, T extends IDomoDb<U> & U>(doc: T): Promise<IAppDbDoc<U>> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify({ content: doc.GetAppDbFormat() }), // Domo needs the form { content: document }
@@ -66,7 +70,7 @@ class DomoDataService {
                 return response.json();
             });
     }
-    public async UpdateAppDbDocument<U, T extends IDomoDb<U> & U>(doc: T): Promise<AppDbDoc<U>> {
+    public async UpdateAppDbDocument<U, T extends IDomoDb<U> & U>(doc: T): Promise<IAppDbDoc<U>> {
         if (doc.id === undefined) {
             throw new Error("missing documentId");
         }
@@ -81,19 +85,7 @@ class DomoDataService {
                 return response.json();
             });
     }
-    public async UpdateDocument<T>(collectionName: string, recordId: string, document: T): Promise<AppDbDoc<T>> {
-        const headers = new Headers({ "Content-Type": "application/json" });
-        const options = {
-            body: JSON.stringify({ content: document }), // Domo needs the form { content: document }
-            headers,
-            method: "PUT",
-        };
-        return fetch(`${this.domoUrl}/${collectionName}/documents/${recordId}`, options)
-            .then((response) => {
-                return response.json();
-            });
-    }
-    public async UpsertDocuments<T>(collectionName: string, documents: Array<AppDbDoc<T>>): Promise<AppDbBulkRes> {
+    public async UpsertDocuments<T>(collectionName: string, documents: Array<IAppDbDoc<T>>): Promise<IAppDbBulkRes> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify(documents), // Domo needs the form { content: document }
@@ -116,7 +108,7 @@ class DomoDataService {
                 return response.ok;
             });
     }
-    public async DeleteDocuments(collectionName: string, recordIds: string[]): Promise<AppDbBulkRes> {
+    public async DeleteDocuments(collectionName: string, recordIds: string[]): Promise<IAppDbBulkRes> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             headers,
@@ -150,7 +142,7 @@ class DomoDataService {
                 }
             });
     }
-    public async CreateCollection(collection: AppDbCollectionSchema): Promise<AppDbCollection> {
+    public async CreateCollection(collection: IAppDbCollectionSchema): Promise<IAppDbCollection> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify(collection), // Domo needs the form { content: document }
@@ -162,7 +154,7 @@ class DomoDataService {
                 return response.json();
             });
     }
-    public async UpdateCollection(collection: AppDbCollectionSchema): Promise<AppDbCollection> {
+    public async UpdateCollection(collection: IAppDbCollectionSchema): Promise<IAppDbCollection> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify(collection), // Domo needs the form { content: document }

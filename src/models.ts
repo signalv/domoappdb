@@ -7,20 +7,20 @@ enum AppDbDataType {
     DATETIME = "DATETIME", // YYYY-MM-DDTHH:MM:SSZ
 
 }
-export interface CollectionSchema {
-    columns: DomoSchema[];
+export interface ICollectionSchema {
+    columns: IDomoSchema[];
 }
-export interface DomoSchema {
+export interface IDomoSchema {
     name: string;
     type: AppDbDataType;
     visible?: boolean;
 }
-export interface AppDbCollectionSchema {
+export interface IAppDbCollectionSchema {
     name: string;
-    schema: CollectionSchema;
+    schema: ICollectionSchema;
     syncEnabled: boolean;
 }
-export interface AppDbCollection {
+export interface IAppDbCollection {
     id: string;
     customer: string;
     owner: number;
@@ -31,7 +31,7 @@ export interface AppDbCollection {
     fullReplaceRequired: boolean;
     lastSync: string; // Date; // "1970-01-02T00:00:00.000+0000"
     updatedBy: number;
-    schema: CollectionSchema;
+    schema: ICollectionSchema;
     createdOn: string; // Date; // "2019-03-04T18:47:12.327+0000"
     updatedOn: string; // Date; // "2019-03-04T18:47:12.327+0000"
     exportable: boolean;
@@ -41,7 +41,7 @@ export enum ManualExportStatus {
     ALREADY_IN_PROGRESS,
     STARTED,
 }
-export interface AppDbBulkRes {
+export interface IAppDbBulkRes {
     Created?: number;
     Updated?: number;
     Deleted?: number;
@@ -53,7 +53,7 @@ export interface IDomoDb<T> {
 }
 
 // based on HTTP Response examples from https://developer.domo.com/docs/dev-studio-references/appdb-storage
-export interface AppDbDoc<T> {
+export interface IAppDbDoc<T> {
     id?: string;
     customer?: string;
     owner?: number;
@@ -69,4 +69,5 @@ export interface AppDbDoc<T> {
 export interface ISVIndexDB {
     collectionName: string;
     idbId?: number | string;
+    id?: string;
 }
