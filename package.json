@@ -1,6 +1,6 @@
 {
   "name": "@signalv/domoappdb",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,15 +13,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/quantumZebraPDX/domoappdb.git"
+    "url": "git+https://github.com/TrashPandacoot/domoappdb.git"
   },
   "keywords": [],
   "author": "Ryan T. Wilson",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/quantumZebraPDX/domoappdb/issues"
+    "url": "https://github.com/TrashPandacoot/domoappdb/issues"
   },
-  "homepage": "https://github.com/quantumZebraPDX/domoappdb#readme",
+  "homepage": "https://github.com/TrashPandacoot/domoappdb#readme",
   "devDependencies": {
     "tslint": "^5.20.1",
     "typescript": "^3.7.3"
