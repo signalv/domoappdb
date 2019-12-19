@@ -1,16 +1,19 @@
+/** Domo Column Data Types */
 enum AppDbDataType {
     STRING = "STRING",
     LONG = "LONG",
     DOUBLE = "DOUBLE",
     DECIMAL = "DECIMAL",
-    DATE = "DATE", // YYYY-MM-DD
-    DATETIME = "DATETIME", // YYYY-MM-DDTHH:MM:SSZ
+    /** Date YYYY-MM-DD Format */
+    DATE = "DATE",
+    /** Datetime YYYY-MM-DDTHH:MM:SSZ Format */
+    DATETIME = "DATETIME",
 
 }
 export interface ICollectionSchema {
-    columns: IDomoSchema[];
+    columns: IDomoColumn[];
 }
-export interface IDomoSchema {
+export interface IDomoColumn {
     name: string;
     type: AppDbDataType;
     visible?: boolean;
@@ -20,6 +23,7 @@ export interface IAppDbCollectionSchema {
     schema: ICollectionSchema;
     syncEnabled: boolean;
 }
+/** Domo AppDb Collection details */
 export interface IAppDbCollection {
     id: string;
     customer: string;
@@ -41,19 +45,32 @@ export enum ManualExportStatus {
     ALREADY_IN_PROGRESS,
     STARTED,
 }
+
+/** Domo AppDb Responses for bulk operations */
 export interface IAppDbBulkRes {
     Created?: number;
     Updated?: number;
     Deleted?: number;
 }
+
+/** Interface for objects that can be stored in the Domo AppDb where `T` is the type to be stored.
+ * @param T is the type to be stored
+ */
 export interface IDomoDb<T> {
+    /** Domo AppDb Document Id */
     id?: string;
+    /** Collection Name to use for Domo AppDb */
     collectionName: string;
+    /** Function to return and object formatted in the way it should be stored in db */
     GetAppDbFormat(): T;
 }
 
-// based on HTTP Response examples from https://developer.domo.com/docs/dev-studio-references/appdb-storage
+/** Response format from AppDb doc query where `T` is the type of content stored.
+ * based on HTTP Response examples from
+ * [Domo Docs](https://developer.domo.com/docs/dev-studio-references/appdb-storage)
+ */
 export interface IAppDbDoc<T> {
+    /** Domo AppDb Document Id */
     id?: string;
     customer?: string;
     owner?: number;
