@@ -120,12 +120,14 @@ class DomoDataService {
             });
     }
 
-    // Manually run a sync between AppDb Collections that are sync enabled and the Domo Datacenter.
+    /**
+     * Manually run a sync between AppDb Collections that are sync enabled and the Domo Datacenter.
+     */
     public async ManuallyExportSyncEnabledCollectionsToDatacenter(): Promise<ManualExportStatus> {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             headers,
-            method: "DELETE",
+            method: "POST",
         };
         return fetch(`/domo/datastores/v1/export`, options)
             .then((response) => {
