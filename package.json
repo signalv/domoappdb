@@ -1,7 +1,7 @@
 {
   "name": "@signalv/domoappdb",
   "version": "0.0.3",
-  "description": "",
+  "description": "Helper Utility to simplify usage of Domo AppDb in Domo Custom Apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
