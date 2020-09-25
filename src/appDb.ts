@@ -71,7 +71,7 @@ class DomoDataService {
             });
     }
     public async UpdateAppDbDocument<U, T extends IDomoDb<U> & U>(doc: T): Promise<IAppDbDoc<U>> {
-        if (doc.id === undefined) {
+        if (doc.id === undefined || doc.id === null) {
             throw new Error("missing documentId");
         }
         const headers = new Headers({ "Content-Type": "application/json" });

@@ -58,7 +58,7 @@ export interface IAppDbBulkRes {
  */
 export interface IDomoDb<T> {
     /** Domo AppDb Document Id */
-    id?: string;
+    id: string | null;
     /** Collection Name to use for Domo AppDb */
     collectionName: string;
     /** Function to return and object formatted in the way it should be stored in db */
@@ -81,10 +81,4 @@ export interface IAppDbDoc<T> {
     updatedBy?: number;
     content?: T;
     syncRequired?: boolean;
-}
-
-export interface ISVIndexDB {
-    collectionName: string;
-    idbId?: number | string;
-    id?: string;
 }
