@@ -56,14 +56,46 @@ export interface IAppDbBulkRes {
 /** Interface for objects that can be stored in the Domo AppDb where `T` is the type to be stored.
  * @param T is the type to be stored
  */
-export interface IDomoDb<T> {
+export interface IDomoDb<T> extends IAppDb {
     /** Domo AppDb Document Id */
     id: string | null;
     /** Collection Name to use for Domo AppDb */
-    collectionName: string;
+    readonly collectionName: string;
     /** Function to return and object formatted in the way it should be stored in db */
     GetAppDbFormat(): T;
 }
+
+export interface IAppDb {
+    id: string | null;
+    /** Collection Name to use for Domo AppDb */
+    readonly collectionName: string;
+}
+
+export interface IDomoDbConstructor {
+    new(): IAppDb;
+}
+
+// function GetData<T extends IDomoDbConstructor>() {
+//     const createT = (ctor: IDomoDbConstructor) => {
+//         return new ctor();
+//     }
+//     const temp = createT(TestIf);
+//     const cn = temp.collectionName;
+// }
+
+// class TestIf implements IDomoDb<TestIf> {
+//     id: string | null;
+//     collectionName: string = "herro";
+//     constructor(val?: TestIf | undefined) {
+//         if (val) {
+//             this.id = val.id;
+//         }
+//     }
+//     GetAppDbFormat(): TestIf {
+//         throw new Error("Method not implemented.");
+//     }
+
+// }
 
 /** Response format from AppDb doc query where `T` is the type of content stored.
  * based on HTTP Response examples from

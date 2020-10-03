@@ -1,4 +1,4 @@
-import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, IDomoDb, ManualExportStatus } from "./models";
+import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, IDomoDb, IDomoDbConstructor, ManualExportStatus } from "./models";
 
 class DomoDataService {
     private static instance: DomoDataService;
@@ -9,6 +9,20 @@ class DomoDataService {
     constructor() {
         // this.damUrl = "https://buildintelligencedataservices.azurewebsites.net/api";
         this.domoUrl = "/domo/datastores/v1/collections";
+    }
+    public async GetAllCollectionDocs<T extends IDomoDbConstructor>(): Promise<Array<IAppDbDoc<T>>> {
+        const createT = (ctor: IDomoDbConstructor) => {
+            return new ctor();
+        }
+        const temp = createT({} as T);
+        const collectionName = temp.collectionName;
+        const options = {
+            // headers,
+        };
+        return fetch(`${this.domoUrl}/${collectionName}/documents`, options)
+            .then((response) => {
+                return response.json();
+            });
     }
     public async GetAllDocuments<T>(collectionName: string): Promise<Array<IAppDbDoc<T>>> {
         const options = {
