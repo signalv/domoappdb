@@ -54,48 +54,30 @@ export interface IAppDbBulkRes {
 }
 
 /** Interface for objects that can be stored in the Domo AppDb where `T` is the type to be stored.
- * @param T is the type to be stored
+ * Optionally a `GetAppDbFormat` method may be defined which will be the value used to store in the AppDb.
+ * This is great for when your class/type used for your app doesn't match the type/data you want to store in the AppDb.
+ * @param T is the type to be stored as the `content` value of a document in an AppDb collection.
  */
-export interface IDomoDb<T> extends IAppDb {
+export interface IDomoDb<T extends IDomoDoc> {
     /** Domo AppDb Document Id */
     id: string | null;
     /** Collection Name to use for Domo AppDb */
     readonly collectionName: string;
-    /** Function to return and object formatted in the way it should be stored in db */
-    GetAppDbFormat(): T;
+    /** Function to return an object formatted in the way it should be stored in db.
+     * This is great for when your class/type used for your app doesn't match the type/data
+     * you want to store in the AppDb.
+     */
+    GetAppDbFormat?(): T;
 }
 
-export interface IAppDb {
+export interface IDomoDoc {
     id: string | null;
-    /** Collection Name to use for Domo AppDb */
-    readonly collectionName: string;
 }
 
-export interface IDomoDbConstructor {
-    new(): IAppDb;
-}
-
-// function GetData<T extends IDomoDbConstructor>() {
-//     const createT = (ctor: IDomoDbConstructor) => {
-//         return new ctor();
-//     }
-//     const temp = createT(TestIf);
-//     const cn = temp.collectionName;
-// }
-
-// class TestIf implements IDomoDb<TestIf> {
-//     id: string | null;
-//     collectionName: string = "herro";
-//     constructor(val?: TestIf | undefined) {
-//         if (val) {
-//             this.id = val.id;
-//         }
-//     }
-//     GetAppDbFormat(): TestIf {
-//         throw new Error("Method not implemented.");
-//     }
-
-// }
+/**
+ * Used to construct class objects of type C from IAppDbDoc<U> returned from the AppDb API.
+ */
+export type ConstructorOf<U extends IDomoDoc, C extends IDomoDb<U>> = new (appDb?: IAppDbDoc<U>, ...args: any[] ) => C;
 
 /** Response format from AppDb doc query where `T` is the type of content stored.
  * based on HTTP Response examples from

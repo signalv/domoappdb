@@ -1,2 +1,4 @@
-export { IDomoDb, IAppDbBulkRes, IAppDbDoc, ManualExportStatus, IAppDbCollection } from "./models";
-export { domoDataService } from "./appDb";
+export { IDomoDb, IAppDbBulkRes, IAppDbDoc, IDomoDoc, ConstructorOf, ManualExportStatus, IAppDbCollection } from "./models";
+export { DomoAppDb } from "./domoDb";
+export { CreateCollection, UpdateCollection, DeleteCollection, ManuallyStartAppDbToDatacenterSync } from "./appDbCollections";
+export { ModifyCollectionPermissions, DeleteCollectionPermissions } from "./collectionLevelSecurity";
