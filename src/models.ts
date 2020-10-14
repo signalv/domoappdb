@@ -60,7 +60,7 @@ export interface IAppDbBulkRes {
  */
 export interface IDomoDb<T extends IDomoDoc> {
     /** Domo AppDb Document Id */
-    id: string | null;
+    id?: string;
     /** Collection Name to use for Domo AppDb */
     readonly collectionName: string;
     /** Function to return an object formatted in the way it should be stored in db.
@@ -71,7 +71,7 @@ export interface IDomoDb<T extends IDomoDoc> {
 }
 
 export interface IDomoDoc {
-    id: string | null;
+    id?: string;
 }
 
 /**
@@ -85,14 +85,14 @@ export type ConstructorOf<U extends IDomoDoc, C extends IDomoDb<U>> = new (appDb
  */
 export interface IAppDbDoc<T> {
     /** Domo AppDb Document Id */
-    id?: string;
+    id: string;
     customer?: string;
-    owner?: number;
-    datastoreId?: string;
-    collectionId?: string;
-    createdOn?: string; // Date; // "2019-03-04T16:59:25.184+0000"
-    updatedOn?: string; // Date; // "2019-03-04T16:59:25.184+0000"
-    updatedBy?: number;
-    content?: T;
+    owner: number;
+    datastoreId: string;
+    collectionId: string;
+    createdOn: string | Date; // Date; // "2019-03-04T16:59:25.184+0000"
+    updatedOn: string | Date; // Date; // "2019-03-04T16:59:25.184+0000"
+    updatedBy: number;
+    content: T;
     syncRequired?: boolean;
 }
