@@ -1,3 +1,4 @@
+import { AppDb } from "./appDb";
 import { ConstructorOf, IAppDbBulkRes, IAppDbDoc, IDomoDb, IDomoDoc } from "./models";
 
 interface IAppDbService<D, T> {
@@ -9,10 +10,14 @@ interface IAppDbService<D, T> {
     Delete: (content: T) => Promise<void>;
     Upsert: (content: T) => Promise<T>;
 }
+
+/**
+ * opinionated implementation of AppDb helper utility. For an unopinionated helper see the AppDb class
+ * which this uses internally.
+ */
 export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IAppDbService<D, T> {
 
     public collectionName: string;
-    public domoUrl: string = "/domo/datastores/v1/collections";
     private collectionClass: ConstructorOf<D, T>;
     constructor(collectionClass: ConstructorOf<D, T>) {
         this.collectionClass = collectionClass;
@@ -23,12 +28,8 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      * retrieve all documents in the AppDb collection
      */
     public async FetchAll() {
-        const options = {
-            // headers,
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents`, options)
-            .then(async (response) => {
-                const appDocArr: Array<IAppDbDoc<D>> = await response.json();
+        return AppDb.FetchAll<D>(this.collectionName)
+            .then((appDocArr) => {
                 const docs = appDocArr.map((doc) => new this.collectionClass(doc));
                 return docs;
             });
@@ -39,12 +40,8 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      * @param documentId id of the document to retreive from the AppDb collection
      */
     public async FetchDoc(documentId: string) {
-        const options = {
-            // headers,
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/${documentId}`, options)
-            .then(async (response) => {
-                const appDoc: IAppDbDoc<D> = await response.json();
+        return AppDb.FetchDoc<D>(this.collectionName, documentId)
+            .then((appDoc) => {
                 const doc =  new this.collectionClass(appDoc);
                 return doc;
             });
@@ -57,17 +54,10 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      * otherwise it'll JSON.stringify this value directly
      */
     public async Create(content: T) {
-        const headers = new Headers({ "Content-Type": "application/json" });
         const docContent = content.GetAppDbFormat?.() ?? content;
         delete (docContent as any).collectionName; // No need to store collectionName in the appDb document
-        const options = {
-            body: JSON.stringify({ content: docContent }), // Domo needs the form { content: document }
-            headers,
-            method: "POST",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/`, options)
-            .then(async (response) => {
-                const appDbDoc = await response.json();
+        return AppDb.Create(this.collectionName, docContent as D)
+            .then((appDbDoc) => {
                 const newDoc = new this.collectionClass(appDbDoc);
                 return newDoc;
             });
@@ -84,15 +74,9 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
         if (content.id === undefined || content.id === null) {
             throw new Error("missing documentId");
         }
-        const headers = new Headers({ "Content-Type": "application/json" });
         const docContent = content.GetAppDbFormat?.() ?? content;
         delete (docContent as any).collectionName; // No need to store collectionName in the appDb document
-        const options = {
-            body: JSON.stringify({ content: docContent }), // Domo needs the form { content: document }
-            headers,
-            method: "PUT",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/${content.id}`, options)
+        return AppDb.Update(this.collectionName, content.id, docContent)
             .then(() => {
                 return;
             });
@@ -112,12 +96,7 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
             }
             docId = recordToDelete.id;
         }
-        const headers = new Headers({ "Content-Type": "application/json" });
-        const options = {
-            headers,
-            method: "DELETE",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/${docId}`, options)
+        return AppDb.Delete(this.collectionName, docId)
             .then(() => {
                 return;
             });
@@ -133,22 +112,13 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      */
     public async BulkUpsert(docs: T[]): Promise<IAppDbBulkRes> {
 
-        const headers = new Headers({ "Content-Type": "application/json" });
         const docsToUpsert = docs.map((d) => d.GetAppDbFormat?.() ?? d);
         docsToUpsert.forEach((d) => {
             if ((d as any).collectionName) {
                 delete (d as any).collectionName;
             }
         });
-        const options = {
-            body: JSON.stringify(docsToUpsert), // Domo needs the form { content: document }
-            headers,
-            method: "PUT",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/bulk`, options)
-            .then((response) => {
-                return response.json();
-        });
+        return AppDb.BulkUpsert(this.collectionName, docsToUpsert);
     }
 
     /**
@@ -158,6 +128,7 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
     public async BulkDelete(recordsToDelete: Array<T | string>): Promise<IAppDbBulkRes> {
         const recordIds: string[] = [];
         recordsToDelete.forEach((item) => {
+            // if it's a string append it otherwise get id from type D
             if (typeof item === "string") { recordIds.push(item); } else {
                 const id = item.GetAppDbFormat?.().id ?? item.id;
                 if (id) {
@@ -165,15 +136,7 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
                 }
             }
         });
-        const headers = new Headers({ "Content-Type": "application/json" });
-        const options = {
-            headers,
-            method: "DELETE",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/bulk?ids=${recordIds.join()}`, options)
-            .then((response) => {
-                return response.json();
-            });
+        return AppDb.BulkDelete(this.collectionName, recordIds);
     }
 
     /**
@@ -181,16 +144,8 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      * @param query query parameters for search
      */
     public async Query(query: any): Promise<T[]> {
-        const dbQuery = query;
-        const headers = new Headers({ "Content-Type": "application/json", "Accept": "application/json" });
-        const options = {
-            body: JSON.stringify(dbQuery), // Domo needs the form { content: document }
-            headers,
-            method: "POST",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/query`, options)
-            .then(async (response) => {
-                const queryResults: Array<IAppDbDoc<D>> = await response.json();
+        return AppDb.Query<D>(this.collectionName, query)
+            .then(async (queryResults) => {
                 const docsFound = queryResults.map((doc) => new this.collectionClass(doc));
                 return docsFound;
             });
@@ -202,30 +157,7 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      * @param aggregationParams aggregation params for query
      */
     public async QueryAggregation(query: any, aggregationParams: IQueryAggregationParams): Promise<object[]> {
-        const dbQuery = query;
-        let aggQueryStr = "";
-        const { groupBy, count, avg, min, max, sum, orderBy, limit, offset } = aggregationParams;
-        if (groupBy) { aggQueryStr += "groupBy=" + groupBy; }
-        if (count) { aggQueryStr += "count=" + count; }
-        if (avg) { aggQueryStr += "avg=" + avg; }
-        if (min) { aggQueryStr += "min=" + min; }
-        if (max) { aggQueryStr += "max=" + max; }
-        if (sum) { aggQueryStr += "sum=" + sum; }
-        if (orderBy) { aggQueryStr += "orderBy=" + orderBy; }
-        if (limit) { aggQueryStr += "limit=" + limit; }
-        if (offset) { aggQueryStr += "offset=" + offset; }
-
-        const headers = new Headers({ "Content-Type": "application/json", "Accept": "application/json" });
-        const options = {
-            body: JSON.stringify(dbQuery), // Domo needs the form { content: document }
-            headers,
-            method: "POST",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/query${aggQueryStr ? "?" + aggQueryStr : ""}`,
-                        options)
-            .then((response) => {
-                return response.json() as unknown as object[];
-            });
+        return AppDb.QueryAggregation(this.collectionName, query, aggregationParams)
     }
 
     /**
@@ -235,18 +167,7 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
      */
     public async UpdateWhere(query: any, operation: any) {
 
-        const reqBody = {
-            query: JSON.stringify(query),
-            // tslint:disable-next-line: object-literal-sort-keys
-            operation: JSON.stringify(operation),
-        };
-        const headers = new Headers({ "Content-Type": "application/json", "Accept": "application/json" });
-        const options = {
-            body: JSON.stringify(reqBody),
-            headers,
-            method: "PUT",
-        };
-        return fetch(`${this.domoUrl}/${this.collectionName}/documents/update`, options)
+        return AppDb.UpdateWhere(this.collectionName, query, operation)
             .then((response) => {
                 return response.json();
             });
