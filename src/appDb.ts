@@ -1,5 +1,6 @@
 import { AppDbCollectionLevelSecurity } from "./collectionLevelSecurity";
 import { IQueryAggregationParams } from "./domoDb";
+import { jsonDateReviver } from "./jsonDateParsing";
 import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, ManualExportStatus } from "./models";
 
 /**
@@ -20,14 +21,20 @@ export class AppDb {
      * retrieve all documents in the AppDb collection
      * @param collectionName AppDb collection to perform action on
      */
-    public static async FetchAll<T>(collectionName: string) {
+    public static async FetchAll<T>(collectionName: string, useJsonDateReviver?: boolean) {
         const options = {
             // headers,
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents`, options)
             .then(async (response) => {
-                const appDocArr: Array<IAppDbDoc<T>> = await response.json();
-                return appDocArr;
+                if (useJsonDateReviver) {
+                    const body = await response.text();
+                    const appDocArr: Array<IAppDbDoc<T>> = JSON.parse(body, jsonDateReviver);
+                    return appDocArr;
+                } else {
+                    const appDocArr: Array<IAppDbDoc<T>> = await response.json();
+                    return appDocArr;
+                }
             });
     }
 

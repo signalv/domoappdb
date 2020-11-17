@@ -20,7 +20,7 @@ export class SvDomoAppDb<T> {
      * retrieve all documents in the AppDb collection
      */
     public async FetchAll() {
-        return AppDb.FetchAll<T>(this.collectionName)
+        return AppDb.FetchAll<T>(this.collectionName, true)
             .then((appDocArr) => {
                 const docs = appDocArr.map((doc) => ({ domoAppDbDocId: doc.id, ...doc.content}));
                 return docs;
