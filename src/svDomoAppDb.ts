@@ -12,6 +12,7 @@ export interface IAppDbContent {
 export class SvDomoAppDb<T> {
 
     public collectionName: string;
+    public ParseDateStringsIntoDate: boolean = true;
     constructor(collectionName: string) {
         this.collectionName = collectionName;
     }
@@ -20,7 +21,7 @@ export class SvDomoAppDb<T> {
      * retrieve all documents in the AppDb collection
      */
     public async FetchAll() {
-        return AppDb.FetchAll<T>(this.collectionName, true)
+        return AppDb.FetchAll<T>(this.collectionName, this.ParseDateStringsIntoDate)
             .then((appDocArr) => {
                 const docs = appDocArr.map((doc) => ({ domoAppDbDocId: doc.id, ...doc.content}));
                 return docs;
@@ -32,7 +33,7 @@ export class SvDomoAppDb<T> {
      * @param documentId id of the document to retreive from the AppDb collection
      */
     public async FetchDoc(documentId: string) {
-        return AppDb.FetchDoc<T>(this.collectionName, documentId)
+        return AppDb.FetchDoc<T>(this.collectionName, documentId, this.ParseDateStringsIntoDate)
             .then((appDoc) => {
                 const doc = { domoAppDbDocId: appDoc.id, ...appDoc.content };
                 return doc;
@@ -49,7 +50,7 @@ export class SvDomoAppDb<T> {
         // const docContent = content.GetAppDbFormat?.() ?? content;
         const docContent = content;
         delete (docContent as any).collectionName; // No need to store collectionName in the appDb document
-        return AppDb.Create(this.collectionName, docContent as T)
+        return AppDb.Create(this.collectionName, docContent as T, this.ParseDateStringsIntoDate)
             .then((appDbDoc) => {
                 const newDoc = { domoAppDbDocId: appDbDoc.id, ...appDbDoc.content };
                 return newDoc;
@@ -141,7 +142,7 @@ export class SvDomoAppDb<T> {
      * @param query query parameters for search
      */
     public async Query(query: any): Promise<T[]> {
-        return AppDb.Query<T>(this.collectionName, query)
+        return AppDb.Query<T>(this.collectionName, query, this.ParseDateStringsIntoDate)
             .then(async (queryResults) => {
                 const docsFound = queryResults.map((doc) => ({ domoAppDbDocId: doc.id, ...doc.content}));
                 return docsFound;
@@ -154,7 +155,7 @@ export class SvDomoAppDb<T> {
      * @param aggregationParams aggregation params for query
      */
     public async QueryAggregation(query: any, aggregationParams: IQueryAggregationParams): Promise<object[]> {
-        return AppDb.QueryAggregation(this.collectionName, query, aggregationParams)
+        return AppDb.QueryAggregation(this.collectionName, query, aggregationParams, this.ParseDateStringsIntoDate);
     }
 
     /**

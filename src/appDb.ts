@@ -43,14 +43,20 @@ export class AppDb {
      * @param collectionName AppDb collection to perform action on
      * @param documentId id of the document to retreive from the AppDb collection
      */
-    public static async FetchDoc<T>(collectionName: string, documentId: string) {
+    public static async FetchDoc<T>(collectionName: string, documentId: string, useJsonDateReviver?: boolean) {
         const options = {
             // headers,
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/${documentId}`, options)
             .then(async (response) => {
-                const appDoc: IAppDbDoc<T> = await response.json();
-                return appDoc;
+                if (useJsonDateReviver) {
+                    const body = await response.text();
+                    const appDoc: IAppDbDoc<T> = JSON.parse(body, jsonDateReviver);
+                    return appDoc;
+                } else {
+                    const appDoc: IAppDbDoc<T> = await response.json();
+                    return appDoc;
+                }
             });
     }
 
@@ -59,7 +65,7 @@ export class AppDb {
      * @param collectionName AppDb collection to create document in.
      * @param content value to store as a new document in the AppDb collection.
      */
-    public static async Create<T>(collectionName: string, content: T) {
+    public static async Create<T>(collectionName: string, content: T, useJsonDateReviver?: boolean) {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
             body: JSON.stringify({ content }), // Domo needs the form { content: document }
@@ -68,8 +74,14 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/`, options)
             .then(async (response) => {
-                const appDbDoc: IAppDbDoc<T> = await response.json();
-                return appDbDoc;
+                if (useJsonDateReviver) {
+                    const body = await response.text();
+                    const appDbDoc: IAppDbDoc<T> = JSON.parse(body, jsonDateReviver);
+                    return appDbDoc;
+                } else {
+                    const appDbDoc: IAppDbDoc<T> = await response.json();
+                    return appDbDoc;
+                }
             });
     }
 
@@ -155,7 +167,7 @@ export class AppDb {
      * @param collectionName AppDb collection to perform action on
      * @param query query parameters for search
      */
-    public static async Query<T>(collectionName: string, query: any) {
+    public static async Query<T>(collectionName: string, query: any, useJsonDateReviver?: boolean) {
         const dbQuery = query;
         const headers = new Headers({ "Content-Type": "application/json", "Accept": "application/json" });
         const options = {
@@ -165,8 +177,14 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/query`, options)
             .then(async (response) => {
-                const queryResults: Array<IAppDbDoc<T>> = await response.json();
-                return queryResults;
+                if (useJsonDateReviver) {
+                    const body = await response.text();
+                    const queryResults: Array<IAppDbDoc<T>> = JSON.parse(body);
+                    return queryResults;
+                } else {
+                    const queryResults: Array<IAppDbDoc<T>> = await response.json();
+                    return queryResults;
+                }
             });
     }
 
@@ -176,7 +194,7 @@ export class AppDb {
      * @param query query parameters for search
      * @param aggregationParams aggregation params for query
      */
-    public static async QueryAggregation(collectionName: string, query: any, aggregationParams: IQueryAggregationParams) {
+    public static async QueryAggregation(collectionName: string, query: any, aggregationParams: IQueryAggregationParams, useJsonDateReviver?: boolean) {
         const dbQuery = query;
         let aggQueryStr = "";
         const { groupBy, count, avg, min, max, sum, orderBy, limit, offset } = aggregationParams;
@@ -198,8 +216,13 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/query${aggQueryStr ? "?" + aggQueryStr : ""}`,
                         options)
-            .then((response) => {
-                return response.json() as unknown as object[];
+            .then(async (response) => {
+                if (useJsonDateReviver) {
+                    const body = await response.text();
+                    return JSON.parse(body, jsonDateReviver) as unknown as object[];
+                } else {
+                    return response.json() as unknown as object[];
+                }
             });
     }
 
