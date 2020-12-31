@@ -110,8 +110,8 @@ Licensed under either of
 ## Contribution
 look at some of these issues:
 
-- [Issues labeled "good first issue"][good-first-issue]
-- [Issues labeled "help wanted"][help-wanted]
+- [Issues labeled "good first issue"](https://github.com/signalv/domoappdb/labels/good%20first%20issue)
+- [Issues labeled "help wanted"](https://github.com/signalv/domoappdb/labels/help%20wanted)
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall
