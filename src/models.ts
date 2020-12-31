@@ -57,6 +57,7 @@ export interface IAppDbBulkRes {
  * Optionally a `GetAppDbFormat` method may be defined which will be the value used to store in the AppDb.
  * This is great for when your class/type used for your app doesn't match the type/data you want to store in the AppDb.
  * @param T is the type to be stored as the `content` value of a document in an AppDb collection.
+ * @deprecated
  */
 export interface IDomoDb<T extends IDomoDoc> {
     /** Domo AppDb Document Id */
@@ -70,6 +71,10 @@ export interface IDomoDb<T extends IDomoDoc> {
     GetAppDbFormat?(): T;
 }
 
+
+/**
+ * @deprecated
+ */
 export interface IDomoDoc {
     id?: string;
 }

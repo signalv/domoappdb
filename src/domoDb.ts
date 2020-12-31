@@ -1,6 +1,9 @@
 import { AppDb } from "./appDb";
 import { ConstructorOf, IAppDbBulkRes, IAppDbDoc, IDomoDb, IDomoDoc } from "./models";
 
+/**
+ * @deprecated
+ */
 interface IAppDbService<D, T> {
     FetchAll: () => Promise<T[]>;
     FetchDoc: (documentId: string) => Promise<T>;
@@ -14,6 +17,7 @@ interface IAppDbService<D, T> {
 /**
  * opinionated implementation of AppDb helper utility. For an unopinionated helper see the AppDb class
  * which this uses internally.
+ * @deprecated
  */
 export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IAppDbService<D, T> {
 
