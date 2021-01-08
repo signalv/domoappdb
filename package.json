@@ -1,6 +1,6 @@
 {
   "name": "@signalv/domoappdb",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Helper Utility to simplify usage of Domo AppDb in Domo Custom Apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,11 +18,11 @@
   },
   "keywords": [],
   "author": "Ryan T. Wilson",
-  "license": "MIT",
+  "license": "(MIT OR Apache-2.0)",
   "bugs": {
     "url": "https://github.com/signalv/domoappdb/issues"
   },
-  "homepage": "https://github.com/signalv/domoappdb#readme",
+  "homepage": "https://github.com/signalv/domoappdb",
   "devDependencies": {
     "tslint": "^5.20.1",
     "typescript": "^4.0.3"

@@ -2,3 +2,4 @@ export { IDomoDb, IAppDbBulkRes, IAppDbDoc, IDomoDoc, ConstructorOf, ManualExpor
 export { AppDb } from "./appDb";
 export { isAppDbDoc } from "./helpers/isAppDbDoc";
 export { SvDomoAppDb, IAppDbContent } from "./svDomoAppDb";
+export { DomoAppDb } from "./domoDb";

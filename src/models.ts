@@ -101,3 +101,10 @@ export interface IAppDbDoc<T> {
     content: T;
     syncRequired?: boolean;
 }
+
+
+export interface DomoErrorResponse {
+    status: number;
+    statusReason: string;
+    toe: string;
+}

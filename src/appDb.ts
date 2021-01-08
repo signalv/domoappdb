@@ -26,15 +26,18 @@ export class AppDb {
             // headers,
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents`, options)
-            .then(async (response) => {
-                if (useJsonDateReviver) {
-                    const body = await response.text();
-                    const appDocArr: Array<IAppDbDoc<T>> = JSON.parse(body, jsonDateReviver);
-                    return appDocArr;
-                } else {
-                    const appDocArr: Array<IAppDbDoc<T>> = await response.json();
-                    return appDocArr;
+            .then(response => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
                 }
+                return response.text()
+            })
+            .then(async (responseText) => {
+                const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
+                const body = responseText;
+                    const appDocArr: Array<IAppDbDoc<T>> = JSON.parse(body, reviver);
+                    return appDocArr;
             });
     }
 
@@ -48,15 +51,18 @@ export class AppDb {
             // headers,
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/${documentId}`, options)
-            .then(async (response) => {
-                if (useJsonDateReviver) {
-                    const body = await response.text();
-                    const appDoc: IAppDbDoc<T> = JSON.parse(body, jsonDateReviver);
-                    return appDoc;
-                } else {
-                    const appDoc: IAppDbDoc<T> = await response.json();
-                    return appDoc;
+            .then(response => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
                 }
+                return response.text()
+            })
+            .then(async (responseText) => {
+                const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
+                    const body = responseText;
+                    const appDoc: IAppDbDoc<T> = JSON.parse(body, reviver);
+                    return appDoc;
             });
     }
 
@@ -73,15 +79,18 @@ export class AppDb {
             method: "POST",
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/`, options)
-            .then(async (response) => {
-                if (useJsonDateReviver) {
-                    const body = await response.text();
-                    const appDbDoc: IAppDbDoc<T> = JSON.parse(body, jsonDateReviver);
-                    return appDbDoc;
-                } else {
-                    const appDbDoc: IAppDbDoc<T> = await response.json();
-                    return appDbDoc;
+            .then(response => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
                 }
+                return response.text()
+            })
+            .then(async (responseTxt) => {
+                const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
+                    const body = responseTxt
+                    const appDbDoc: IAppDbDoc<T> = JSON.parse(body, reviver);
+                    return appDbDoc;
             });
     }
 
@@ -99,7 +108,11 @@ export class AppDb {
             method: "PUT",
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/${docId}`, options)
-            .then(() => {
+            .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 return;
             });
     }
@@ -116,7 +129,12 @@ export class AppDb {
             method: "DELETE",
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/${docId}`, options)
-            .then(() => {
+            .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    console.error('Domo AppDb API Network response was not ok', response.json())
+                    throw new Error('Domo AppDb API Network response was not ok')
+                }
                 return;
             });
     }
@@ -141,6 +159,10 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/bulk`, options)
             .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 return response.json();
         });
     }
@@ -158,6 +180,10 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/bulk?ids=${recordIds.join()}`, options)
             .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 return response.json();
             });
     }
@@ -176,15 +202,18 @@ export class AppDb {
             method: "POST",
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/query`, options)
-            .then(async (response) => {
-                if (useJsonDateReviver) {
-                    const body = await response.text();
-                    const queryResults: Array<IAppDbDoc<T>> = JSON.parse(body);
-                    return queryResults;
-                } else {
-                    const queryResults: Array<IAppDbDoc<T>> = await response.json();
-                    return queryResults;
+            .then(response => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
                 }
+                return response.text()
+            })
+            .then(async (response) => {
+                const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
+                    const body = response
+                    const queryResults: Array<IAppDbDoc<T>> = JSON.parse(body, reviver);
+                    return queryResults;
             });
     }
 
@@ -217,6 +246,10 @@ export class AppDb {
         return fetch(`${this.domoUrl}/${collectionName}/documents/query${aggQueryStr ? "?" + aggQueryStr : ""}`,
                         options)
             .then(async (response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 if (useJsonDateReviver) {
                     const body = await response.text();
                     return JSON.parse(body, jsonDateReviver) as unknown as object[];
@@ -247,6 +280,10 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/${collectionName}/documents/update`, options)
             .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 return response.json();
             });
     }
@@ -261,6 +298,10 @@ export class AppDb {
         };
         return fetch(`${this.domoUrl}/`, options)
             .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                 return response.json();
             });
     }
@@ -278,6 +319,10 @@ export class AppDb {
             };
             return fetch(`${this.domoUrl}/`, options)
                 .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                     return response.json();
                 });
     }
@@ -296,6 +341,10 @@ export class AppDb {
             };
             return fetch(`${this.domoUrl}/${collectionName}`, options)
                 .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
                     return response.json();
                 });
     }
@@ -310,7 +359,14 @@ export class AppDb {
                 headers,
                 method: "DELETE",
             };
-            return fetch(`${this.domoUrl}/${collectionName}`, options).then(() => { return; });
+        return fetch(`${this.domoUrl}/${collectionName}`, options)
+            .then(response => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
+                return;
+            })
     }
 
     /**
