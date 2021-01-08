@@ -80,6 +80,7 @@ export interface IDomoDoc {
 }
 
 /**
+ * @deprecated
  * Used to construct class objects of type C from IAppDbDoc<U> returned from the AppDb API.
  */
 export type ConstructorOf<U extends IDomoDoc, C extends IDomoDb<U>> = new (appDb?: IAppDbDoc<U>, ...args: any[] ) => C;

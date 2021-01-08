@@ -19,7 +19,8 @@ export class AppDb {
 
     /**
      * retrieve all documents in the AppDb collection
-     * @param collectionName AppDb collection to perform action on
+     * @param collectionName AppDb collection to perform action on.
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
     public static async FetchAll<T>(collectionName: string, useJsonDateReviver?: boolean) {
         const options = {
@@ -45,6 +46,7 @@ export class AppDb {
      * retrieve an individual record from the AppDb collection
      * @param collectionName AppDb collection to perform action on
      * @param documentId id of the document to retreive from the AppDb collection
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
     public static async FetchDoc<T>(collectionName: string, documentId: string, useJsonDateReviver?: boolean) {
         const options = {
@@ -70,6 +72,7 @@ export class AppDb {
      * Create a new document in the AppDb Collection and return the resulting value.
      * @param collectionName AppDb collection to create document in.
      * @param content value to store as a new document in the AppDb collection.
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
     public static async Create<T>(collectionName: string, content: T, useJsonDateReviver?: boolean) {
         const headers = new Headers({ "Content-Type": "application/json" });
@@ -192,6 +195,7 @@ export class AppDb {
      * see [Domo Docs](https://developer.domo.com/docs/dev-studio-references/appdb#Query%20Documents)
      * @param collectionName AppDb collection to perform action on
      * @param query query parameters for search
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
     public static async Query<T>(collectionName: string, query: any, useJsonDateReviver?: boolean) {
         const dbQuery = query;
@@ -222,6 +226,7 @@ export class AppDb {
      * @param collectionName AppDb collection to perform action on
      * @param query query parameters for search
      * @param aggregationParams aggregation params for query
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
     public static async QueryAggregation(collectionName: string, query: any, aggregationParams: IQueryAggregationParams, useJsonDateReviver?: boolean) {
         const dbQuery = query;

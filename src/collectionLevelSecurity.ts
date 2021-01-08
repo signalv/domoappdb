@@ -1,8 +1,8 @@
 
 /**
- * All AppDb Collection Level Permission flags
+ * All AppDb Collection Level Permissions
  */
-export type AppDbPermission = "admin" | "write" | "read" | "share" | "delete" | "create_content" | "update_content" | "read_content" | "delete_content";
+export type AppDbCollectionPermission = "admin" | "write" | "read" | "share" | "delete" | "create_content" | "update_content" | "read_content" | "delete_content";
 
 /**
  * Simple wrapper around Collection Level Security APIs.
@@ -19,7 +19,7 @@ export class AppDbCollectionLevelSecurity {
     public static async ModifyCollectionPermissions(
         collectionName: string,
         level: "USER" | "GROUP" | "RYUU_APP", entityId: string,
-        permissions: AppDbPermission[]) {
+        permissions: AppDbCollectionPermission[]) {
             const headers = new Headers({ "Content-Type": "application/json" });
             const options = {
                 headers,

@@ -11,7 +11,9 @@ export interface IAppDbContent {
  */
 export class SvDomoAppDb<T> {
 
+    /** AppDb Collection Name to use when interacting with AppDb API */
     public collectionName: string;
+    /** Whether or not to deserialize date strings into Date objects when parsing json from Domo */
     public ParseDateStringsIntoDate: boolean = true;
     constructor(collectionName: string) {
         this.collectionName = collectionName;
@@ -43,14 +45,9 @@ export class SvDomoAppDb<T> {
     /**
      * Create a new document in the AppDb Collection and return the resulting value.
      * @param content value to store as a new document in the AppDb collection.
-     * If content has a `GetAppDbFormat` method defined that will be used as the value to store,
-     * otherwise it'll JSON.stringify this value directly
      */
     public async Create(content: T) {
-        // const docContent = content.GetAppDbFormat?.() ?? content;
-        const docContent = content;
-        delete (docContent as any).collectionName; // No need to store collectionName in the appDb document
-        return AppDb.Create(this.collectionName, docContent as T, this.ParseDateStringsIntoDate)
+        return AppDb.Create(this.collectionName, content, this.ParseDateStringsIntoDate)
             .then((appDbDoc) => {
                 const newDoc = { domoAppDbDocId: appDbDoc.id, ...appDbDoc.content };
                 return newDoc;
@@ -60,21 +57,13 @@ export class SvDomoAppDb<T> {
     /**
      * Update the content of an existing AppDb collection document.
      * @param content existing documents local state to update the document in the AppDb collection to.
-     * If content has a `GetAppDbFormat` method defined that will be used as the value to store,
-     * otherwise it'll JSON.stringify this value directly.
-     * If content.id is null or undefined it will throw an error.
+     * If content.domoAppDbDocId is null or undefined it will throw an error.
      */
     public async Update(content: T & IAppDbContent) {
         if (content.domoAppDbDocId === undefined || content.domoAppDbDocId === null) {
             throw new Error("missing documentId");
         }
-        // const docContent = content.GetAppDbFormat?.() ?? content;
-        const docContent = content;
-        delete (docContent as any).collectionName; // No need to store collectionName in the appDb document
-        return AppDb.Update(this.collectionName, content.domoAppDbDocId, docContent)
-            .then(() => {
-                return;
-            });
+        return AppDb.Update(this.collectionName, content.domoAppDbDocId, content)
     }
 
     /**
@@ -92,9 +81,6 @@ export class SvDomoAppDb<T> {
             docId = recordToDelete.domoAppDbDocId!;
         }
         return AppDb.Delete(this.collectionName, docId)
-            .then(() => {
-                return;
-            });
     }
 
     public async Upsert(content: T): Promise<T> {
@@ -107,14 +93,8 @@ export class SvDomoAppDb<T> {
      */
     public async BulkUpsert(docs: T[]): Promise<IAppDbBulkRes> {
 
-        // const docsToUpsert = docs.map((d) => d.GetAppDbFormat?.() ?? d);
-
         const docsToUpsert = docs;
-        docsToUpsert.forEach((d) => {
-            if ((d as any).collectionName) {
-                delete (d as any).collectionName;
-            }
-        });
+
         return AppDb.BulkUpsert(this.collectionName, docsToUpsert);
     }
 
@@ -122,13 +102,14 @@ export class SvDomoAppDb<T> {
      * Bulk delete a set of documents from the AppDb collection
      * @param recordsToDelete list of documents/documentIds to delete from AppDb collection
      */
-    public async BulkDelete(recordsToDelete: Array<T | string>): Promise<IAppDbBulkRes> {
+    public async BulkDelete(recordsToDelete: Array<T & IAppDbContent | string>): Promise<IAppDbBulkRes> {
         const recordIds: string[] = [];
         recordsToDelete.forEach((item) => {
             // if it's a string append it otherwise get id from type D
-            if (typeof item === "string") { recordIds.push(item); } else {
-                // const id = item.GetAppDbFormat?.().id ?? item.id;
-                const id = (item as unknown as IAppDbContent).domoAppDbDocId;
+            if (typeof item === "string") {
+                recordIds.push(item as string);
+            } else {
+                const id = item.domoAppDbDocId;
                 if (id) {
                     recordIds.push(id);
                 }
