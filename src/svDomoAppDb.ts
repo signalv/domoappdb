@@ -25,7 +25,7 @@ export class SvDomoAppDb<T> {
     public async FetchAll() {
         return AppDb.FetchAll<T>(this.collectionName, this.ParseDateStringsIntoDate)
             .then((appDocArr) => {
-                const docs = appDocArr.map((doc) => ({ domoAppDbDocId: doc.id, ...doc.content}));
+                const docs = appDocArr.map((doc) => ({ ...doc.content, domoAppDbDocId: doc.id }));
                 return docs;
             });
     }
@@ -37,7 +37,7 @@ export class SvDomoAppDb<T> {
     public async FetchDoc(documentId: string) {
         return AppDb.FetchDoc<T>(this.collectionName, documentId, this.ParseDateStringsIntoDate)
             .then((appDoc) => {
-                const doc = { domoAppDbDocId: appDoc.id, ...appDoc.content };
+                const doc = { ...appDoc.content, domoAppDbDocId: appDoc.id };
                 return doc;
             });
     }
@@ -49,7 +49,7 @@ export class SvDomoAppDb<T> {
     public async Create(content: T) {
         return AppDb.Create(this.collectionName, content, this.ParseDateStringsIntoDate)
             .then((appDbDoc) => {
-                const newDoc = { domoAppDbDocId: appDbDoc.id, ...appDbDoc.content };
+                const newDoc = { ...appDbDoc.content, domoAppDbDocId: appDbDoc.id };
                 return newDoc;
             });
     }
@@ -125,7 +125,7 @@ export class SvDomoAppDb<T> {
     public async Query(query: any): Promise<T[]> {
         return AppDb.Query<T>(this.collectionName, query, this.ParseDateStringsIntoDate)
             .then(async (queryResults) => {
-                const docsFound = queryResults.map((doc) => ({ domoAppDbDocId: doc.id, ...doc.content}));
+                const docsFound = queryResults.map((doc) => ({ ...doc.content, domoAppDbDocId: doc.id }));
                 return docsFound;
             });
     }
