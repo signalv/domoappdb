@@ -1,7 +1,7 @@
 import { AppDbCollectionLevelSecurity } from "./collectionLevelSecurity";
 import { IQueryAggregationParams } from "./domoDb";
 import { jsonDateReviver } from "./jsonDateParsing";
-import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, ManualExportStatus } from "./models";
+import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, ManualExportStatus, UpsertDocument } from "./models";
 
 /**
  * Simple wrapper for the Domo AppDb APIs
@@ -147,14 +147,46 @@ export class AppDb {
     }
 
     /**
+     * Creates or updates document contents in AppDb collection. This method assumes that every item is the contents property of a document.
+     * 
+     * If an item in docContents has a domoAppDbDocId property, it will be used to update the document.
+     * otherwise, a new document will be created with the item content.
+     * 
+     * @param collectionName AppDb collection to perform action on
+     * @param docContents array of object content to create/update
+     */
+    public static async BulkUpsertContent<T>(collectionName: string, docContents: T[]): Promise<IAppDbBulkRes> {
+
+        const headers = new Headers({ "Content-Type": "application/json" });
+        const docsToUpsert = docContents.map((d) => ({ id: (d as any).domoAppDbDocId ?? undefined, content: d }));
+        const options = {
+            body: JSON.stringify(docsToUpsert), // Domo needs the form { content: object }[]
+            headers,
+            method: "PUT",
+        };
+        return fetch(`${this.domoUrl}/${collectionName}/documents/bulk`, options)
+            .then((response) => {
+                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
+                if (!response.ok) {
+                    throw new Error('Domo AppDb API Response was not Ok')
+                }
+                return response.json();
+        });
+    }
+
+    /**
      * Creates or updates documents in AppDb collection.
+     * 
+     * if the item in docs has an id property, it will be used to update an existing document.
+     * Otherwise, a new document will be created with the item content.
+     * 
      * @param collectionName AppDb collection to perform action on
      * @param docs array of documents to create/update
      */
-    public static async BulkUpsert<T>(collectionName: string, docs: T[]): Promise<IAppDbBulkRes> {
+    public static async BulkUpsertDocuments<T extends UpsertDocument<T>>(collectionName: string, docs: T[]): Promise<IAppDbBulkRes> {
 
         const headers = new Headers({ "Content-Type": "application/json" });
-        const docsToUpsert = docs.map((d) => ({ content: d }));
+        const docsToUpsert = docs
         const options = {
             body: JSON.stringify(docsToUpsert), // Domo needs the form { content: object }[]
             headers,
