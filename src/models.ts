@@ -103,6 +103,18 @@ export interface IAppDbDoc<T> {
     syncRequired?: boolean;
 }
 
+export interface UpsertDocument<T> {
+    id?: string
+    customer?: string
+    owner?: number
+    datastoreId?: string
+    collectionId?: string
+    createdOn?: string | Date
+    updatedOn?: string | Date
+    updatedBy?: number
+    content: T
+}
+
 
 export interface DomoErrorResponse {
     status: number;
