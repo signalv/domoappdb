@@ -91,11 +91,11 @@ export class SvDomoAppDb<T> {
      * Creates or updates documents in AppDb collection.
      * @param docs array of documents to create/update
      */
-    public async BulkUpsert(docs: T[]): Promise<IAppDbBulkRes> {
+    public async BulkUpsert(docs: (T & IAppDbContent)[]): Promise<IAppDbBulkRes> {
 
         const docsToUpsert = docs;
 
-        return AppDb.BulkUpsert(this.collectionName, docsToUpsert);
+        return AppDb.BulkUpsertContent(this.collectionName, docsToUpsert);
     }
 
     /**

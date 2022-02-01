@@ -111,21 +111,6 @@ export class DomoAppDb<D extends IDomoDoc, T extends IDomoDb<D>> implements IApp
     }
 
     /**
-     * Creates or updates documents in AppDb collection.
-     * @param docs array of documents to create/update
-     */
-    public async BulkUpsert(docs: T[]): Promise<IAppDbBulkRes> {
-
-        const docsToUpsert = docs.map((d) => d.GetAppDbFormat?.() ?? d);
-        docsToUpsert.forEach((d) => {
-            if ((d as any).collectionName) {
-                delete (d as any).collectionName;
-            }
-        });
-        return AppDb.BulkUpsert(this.collectionName, docsToUpsert);
-    }
-
-    /**
      * Bulk delete a set of documents from the AppDb collection
      * @param recordsToDelete list of documents/documentIds to delete from AppDb collection
      */
