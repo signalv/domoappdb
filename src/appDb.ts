@@ -155,16 +155,17 @@ export class AppDb {
      * otherwise a new document will be created.
      * @param collection Name of the collection to perform the action on.
      * @param data doc to create or update in the collection
+     * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      * @returns 
      */
-    public static async Upsert<T>(collection: string, data: AppDbDoc<T> | UpsertableDoc<T>): Promise<AppDbDoc<T>> {
+    public static async Upsert<T>(collection: string, data: AppDbDoc<T> | UpsertableDoc<T>, useJsonDateReviver?: boolean): Promise<AppDbDoc<T>> {
         if (isUpdatableAppDbDoc(data)) {
             // update
             await this.Update(collection, data)
             return data
         } else {
             // create new
-            const newDoc = await this.Create<T>(collection, data)
+            const newDoc = await this.Create<T>(collection, data, useJsonDateReviver)
             return newDoc;
         }
     }
