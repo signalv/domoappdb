@@ -1,8 +1,15 @@
 import { AppDbCollectionLevelSecurity } from "./collectionLevelSecurity";
-import { IQueryAggregationParams } from "./domoDb";
+import { IAppDbDoc, AppDbDoc, UpsertableDoc, IQueryAggregationParams, IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, ManualExportStatus } from "./interfaces";
 import { jsonDateReviver } from "./jsonDateParsing";
-import { IAppDbBulkRes, IAppDbCollection, IAppDbCollectionSchema, IAppDbDoc, ManualExportStatus, UpsertDocument } from "./models";
 
+/**
+ * type guard for narrowing between AppDbDoc<T> and UpsertableDoc<T>
+ * @param val value to narrow to AppDbDoc<T> and UpsertableDoc<T> 
+ */
+export function isUpdatableAppDbDoc<T>(val: AppDbDoc<T> | UpsertableDoc<T>): val is AppDbDoc<T> {
+    const v = val as AppDbDoc<T>
+    return v.content !== undefined && v.id !== undefined;
+}
 /**
  * Simple wrapper for the Domo AppDb APIs
  */
@@ -37,7 +44,7 @@ export class AppDb {
             .then(async (responseText) => {
                 const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
                 const body = responseText;
-                    const appDocArr: Array<IAppDbDoc<T>> = JSON.parse(body, reviver);
+                    const appDocArr: Array<AppDbDoc<T>> = JSON.parse(body, reviver);
                     return appDocArr;
             });
     }
@@ -63,7 +70,7 @@ export class AppDb {
             .then(async (responseText) => {
                 const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
                     const body = responseText;
-                    const appDoc: IAppDbDoc<T> = JSON.parse(body, reviver);
+                    const appDoc: AppDbDoc<T> = JSON.parse(body, reviver);
                     return appDoc;
             });
     }
@@ -71,13 +78,13 @@ export class AppDb {
     /**
      * Create a new document in the AppDb Collection and return the resulting value.
      * @param collectionName AppDb collection to create document in.
-     * @param content value to store as a new document in the AppDb collection.
+     * @param data value to store as a new document in the AppDb collection.
      * @param useJsonDateReviver Whether or not to deserialize strings matching ISO 8601 date formatting as js Date objects.
      */
-    public static async Create<T>(collectionName: string, content: T, useJsonDateReviver?: boolean) {
+    public static async Create<T>(collectionName: string, data: UpsertableDoc<T>, useJsonDateReviver?: boolean) {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
-            body: JSON.stringify({ content }), // Domo needs the form { content: document }
+            body: JSON.stringify({ data }), // Domo needs the form { content: document }
             headers,
             method: "POST",
         };
@@ -92,7 +99,7 @@ export class AppDb {
             .then(async (responseTxt) => {
                 const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
                     const body = responseTxt
-                    const appDbDoc: IAppDbDoc<T> = JSON.parse(body, reviver);
+                    const appDbDoc: AppDbDoc<T> = JSON.parse(body, reviver);
                     return appDbDoc;
             });
     }
@@ -100,17 +107,17 @@ export class AppDb {
     /**
      * Update the content of an existing AppDb collection document.
      * @param collectionName AppDb collection document to update is located.
-     * @param docId documentId to update the content for in AppDb
-     * @param content existing documents local state to update the document in the AppDb collection to.
+     * @param data existing documents local state to update the document in the AppDb collection to.
      */
-    public static async Update<T>(collectionName: string, docId: string, content: T) {
+    public static async Update<T>(collectionName: string, data: IAppDbDoc<T>) {
+        if (!data.id) throw new Error('No id provided for document to update');
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
-            body: JSON.stringify({ content }), // Domo needs the form { content: object }
+            body: JSON.stringify({ data }), // Domo needs the form { content: object }
             headers,
             method: "PUT",
         };
-        return fetch(`${this.domoUrl}/${collectionName}/documents/${docId}`, options)
+        return fetch(`${this.domoUrl}/${collectionName}/documents/${data.id}`, options)
             .then((response) => {
                 // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
                 if (!response.ok) {
@@ -142,36 +149,24 @@ export class AppDb {
             });
     }
 
-    public static async Upsert<T>(content: T): Promise<IAppDbDoc<T>> {
-        throw new Error("not yet implemented");
-    }
-
     /**
-     * Creates or updates document contents in AppDb collection. This method assumes that every item is the contents property of a document.
-     * 
-     * If an item in docContents has a domoAppDbDocId property, it will be used to update the document.
-     * otherwise, a new document will be created with the item content.
-     * 
-     * @param collectionName AppDb collection to perform action on
-     * @param docContents array of object content to create/update
+     * Create or update a document in the AppDb collection.
+     * If there's an id in the data prop, the document will be updated,
+     * otherwise a new document will be created.
+     * @param collection Name of the collection to perform the action on.
+     * @param data doc to create or update in the collection
+     * @returns 
      */
-    public static async BulkUpsertContent<T>(collectionName: string, docContents: T[]): Promise<IAppDbBulkRes> {
-
-        const headers = new Headers({ "Content-Type": "application/json" });
-        const docsToUpsert = docContents.map((d) => ({ id: (d as any).domoAppDbDocId ?? undefined, content: d }));
-        const options = {
-            body: JSON.stringify(docsToUpsert), // Domo needs the form { content: object }[]
-            headers,
-            method: "PUT",
-        };
-        return fetch(`${this.domoUrl}/${collectionName}/documents/bulk`, options)
-            .then((response) => {
-                // A fetch promise will reject when a network error is encountered, but a 404 does not constitute a network error
-                if (!response.ok) {
-                    throw new Error('Domo AppDb API Response was not Ok')
-                }
-                return response.json();
-        });
+    public static async Upsert<T>(collection: string, data: AppDbDoc<T> | UpsertableDoc<T>): Promise<AppDbDoc<T>> {
+        if (isUpdatableAppDbDoc(data)) {
+            // update
+            await this.Update(collection, data)
+            return data
+        } else {
+            // create new
+            const newDoc = await this.Create<T>(collection, data)
+            return newDoc;
+        }
     }
 
     /**
@@ -183,7 +178,7 @@ export class AppDb {
      * @param collectionName AppDb collection to perform action on
      * @param docs array of documents to create/update
      */
-    public static async BulkUpsertDocuments<T extends UpsertDocument<T>>(collectionName: string, docs: T[]): Promise<IAppDbBulkRes> {
+    public static async BulkUpsertDocuments<T>(collectionName: string, docs: UpsertableDoc<T>[]): Promise<IAppDbBulkRes> {
 
         const headers = new Headers({ "Content-Type": "application/json" });
         const docsToUpsert = docs
@@ -248,7 +243,7 @@ export class AppDb {
             .then(async (response) => {
                 const reviver = useJsonDateReviver ? jsonDateReviver : undefined;
                     const body = response
-                    const queryResults: Array<IAppDbDoc<T>> = JSON.parse(body, reviver);
+                    const queryResults: Array<AppDbDoc<T>> = JSON.parse(body, reviver);
                     return queryResults;
             });
     }

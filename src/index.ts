@@ -1,5 +1,3 @@
-export { IDomoDb, IAppDbBulkRes, IAppDbDoc, IDomoDoc, ConstructorOf, ManualExportStatus, IAppDbCollection } from "./models";
+export type { IAppDbBulkRes, AppDbDoc, AppDbDocMetadata, AppDbDomoMetadata, IAppDbCollection } from "./interfaces";
+export { ManualExportStatus } from './interfaces';
 export { AppDb } from "./appDb";
-export { isAppDbDoc } from "./helpers/isAppDbDoc";
-export { SvDomoAppDb, IAppDbContent } from "./svDomoAppDb";
-export { DomoAppDb } from "./domoDb";
