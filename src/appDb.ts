@@ -84,7 +84,7 @@ export class AppDb {
     public static async Create<T>(collectionName: string, data: UpsertableDoc<T>, useJsonDateReviver?: boolean) {
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
-            body: JSON.stringify({ data }), // Domo needs the form { content: document }
+            body: JSON.stringify(data), // Domo needs the form { content: document }
             headers,
             method: "POST",
         };
@@ -113,7 +113,7 @@ export class AppDb {
         if (!data.id) throw new Error('No id provided for document to update');
         const headers = new Headers({ "Content-Type": "application/json" });
         const options = {
-            body: JSON.stringify({ data }), // Domo needs the form { content: object }
+            body: JSON.stringify(data), // Domo needs the form { content: object }
             headers,
             method: "PUT",
         };
