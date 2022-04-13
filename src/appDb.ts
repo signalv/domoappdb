@@ -4,11 +4,16 @@ import { jsonDateReviver } from "./jsonDateParsing";
 
 /**
  * type guard for narrowing between AppDbDoc<T> and UpsertableDoc<T>
+ * if there's a `content` property and an `id` property that's not an empty string, it's an AppDbDoc<T>
  * @param val value to narrow to AppDbDoc<T> and UpsertableDoc<T> 
  */
 export function isUpdatableAppDbDoc<T>(val: AppDbDoc<T> | UpsertableDoc<T>): val is AppDbDoc<T> {
     const v = val as AppDbDoc<T>
-    return v.content !== undefined && v.id !== undefined;
+    // Check if the value has an `id` property and if it does make sure it's not an empty string
+    // (if the form submitting the record has a hidden input for the `id` field, it can end up with
+    // an empty string as the default value.)
+    const hasId = v.id !== undefined && v.id !== null && v.id !== '';
+    return v.content !== undefined && hasId;
 }
 /**
  * Simple wrapper for the Domo AppDb APIs
